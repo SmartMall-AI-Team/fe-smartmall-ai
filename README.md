@@ -50,3 +50,9 @@ A API fica em [be-smartmall-ai](https://github.com/SmartMall-AI/be-smartmall-ai)
 - Adaptar a navegação e os formulários para telas menores.
 
 Acrescentar instruções de instalação e execução quando a aplicação for criada.
+
+## Liderança e contribuição
+
+[@geraldojoao](https://github.com/geraldojoao) lidera o projeto e coordena a revisão e a integração das alterações. Trabalhe em uma branch e abra um pull request para `main`, conforme [CONTRIBUTING.md](CONTRIBUTING.md).
+
+Para conhecer a proposta e consultar as evidências, veja o [roteiro para a banca](https://github.com/SmartMall-AI/docs-smartmall-ai/blob/main/avaliacao.md).
