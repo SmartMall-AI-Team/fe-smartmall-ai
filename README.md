@@ -2,6 +2,8 @@
 
 Protótipo de interface para acompanhar ocorrências, revisar sugestões de IA, distribuir tarefas e consultar equipamentos do shopping.
 
+[Abrir demonstração online](https://smartmall-ai-demo.vercel.app). O ambiente exige código privado fornecido pela organização e usa somente dados fictícios com IA simulada. Os 12 cenários de navegador também passaram contra os serviços publicados na Vercel, Render e Supabase. O projeto Vercel está conectado à main deste repositório para os próximos deploys.
+
 ## Executar localmente
 
 Requisitos: Node.js 20.19+ ou 22.12+.
@@ -52,7 +54,7 @@ Foram aprovados 12 cenários de navegador: seis fluxos em desktop e celular com 
 
 Para testar o ambiente protegido, defina `E2E_ACCESS_TOKEN` com o mesmo código configurado no backend; o servidor Vite de testes habilita a entrada desse código. Sem essa variável, o cenário de acesso é omitido e os demais continuam disponíveis para o backend local sem proteção. Use códigos exclusivos de teste; traces de falhas podem conter cabeçalhos de requisição.
 
-Filtros completos de categoria/equipamento/local, edição de responsável/prazo de tarefa, autenticação real, teste com usuários e publicação permanecem como trabalho futuro. O build ainda emite aviso de tamanho do bundle; a aplicação compila, mas a divisão do código pode ser melhorada.
+Filtros completos de categoria/equipamento/local, edição de responsável/prazo de tarefa, autenticação real e testes com usuários permanecem como trabalho futuro. O build ainda emite aviso de tamanho do bundle; a aplicação compila, mas a divisão do código pode ser melhorada.
 
 ## Limites da demonstração
 
