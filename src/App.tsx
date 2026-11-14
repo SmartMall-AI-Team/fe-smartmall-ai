@@ -66,7 +66,7 @@ function App() {
     if (saved === 'light' || saved === 'dark') return saved;
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   });
-  const [page, setPage] = useState<Page>('dashboard');
+  const [page, setPage] = useState<Page>(() => sessionStorage.getItem('sm-demo-role') === 'technician' ? 'tasks' : sessionStorage.getItem('sm-demo-role') === 'tenant' ? 'occurrences' : 'dashboard');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [role, setRole] = useState<Role>(() => (sessionStorage.getItem('sm-demo-role') as Role) || 'manager');
   const [tenantName, setTenantName] = useState(() => sessionStorage.getItem('sm-tenant-name') || 'Ana Souza · Loja Zara');
@@ -226,7 +226,7 @@ function App() {
         {apiError && <div className="api-alert"><AlertCircle size={18} /><div><strong>Não foi possível atualizar os dados</strong><span>{apiError} Confira VITE_API_BASE_URL e se o backend está em execução.</span></div><button className="button button-secondary button-small" onClick={() => void refresh()}>Tentar novamente</button></div>}
         <div className="page-content">
           {page === 'dashboard' && isAdmin && <DashboardPage summary={summary} occurrences={occurrences} tasks={tasks} overdueIds={overdueOccurrenceIds} loading={loading} onOpen={id => go('detail', id)} onAll={() => go('occurrences')} onTasks={() => go('tasks')} />}
-          {page === 'occurrences' && <OccurrencesPage occurrences={visibleOccurrences} role={role} overdueIds={overdueOccurrenceIds} loading={loading} onOpen={id => go('detail', id)} onNew={() => go('new')} />}
+          {page === 'occurrences' && <OccurrencesPage occurrences={visibleOccurrences} tasks={tasks} role={role} overdueIds={overdueOccurrenceIds} loading={loading} onOpen={id => go('detail', id)} onNew={() => go('new')} />}
           {page === 'new' && <NewOccurrencePage equipment={equipment} role={role} onCancel={() => go(role === 'tenant' ? 'occurrences' : 'dashboard')} onCreated={async occurrence => { if (role === 'tenant') saveTenantCreated(occurrence.id); await refresh(); setToast('Ocorrência registrada.'); go('detail', occurrence.id); }} />}
           {page === 'detail' && selectedId && <OccurrenceDetailPage id={selectedId} role={role} technicians={technicians} equipment={equipment} onBack={() => go(role === 'tenant' ? 'occurrences' : 'occurrences')} onChange={async message => { await refresh(); setToast(message); }} />}
           {page === 'tasks' && <TasksPage tasks={role === 'technician' ? tasks.filter(task => task.assigned_to === technicianId) : tasks} occurrences={occurrences} role={role} technicianId={technicianId} onOpen={id => go('detail', id)} onUpdate={(task, status) => completeAction(() => api.patchTask(task.id, { status }), `Tarefa atualizada: ${TASK_LABEL[status]}.`, 'tasks')} />}
@@ -355,9 +355,15 @@ function EmptyState({ title, detail, action }: { title: string; detail: string; 
   return <div className="empty-state"><div className="empty-icon"><FileText size={21} /></div><strong>{title}</strong><p>{detail}</p>{action}</div>;
 }
 
-function OccurrencesPage({ occurrences, role, overdueIds, loading, onOpen, onNew }: { occurrences: Occurrence[]; role: Role; overdueIds: Set<string>; loading: boolean; onOpen: (id: string) => void; onNew: () => void }) {
+function OccurrencesPage({ occurrences, tasks, role, overdueIds, loading, onOpen, onNew }: { occurrences: Occurrence[]; tasks: Task[]; role: Role; overdueIds: Set<string>; loading: boolean; onOpen: (id: string) => void; onNew: () => void }) {
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
+  const deadlines = new Map<string, string>();
+  for (const task of tasks) {
+    if (!task.due_at || task.status === 'completed') continue;
+    const current = deadlines.get(task.occurrence_id);
+    if (!current || new Date(task.due_at) < new Date(current)) deadlines.set(task.occurrence_id, task.due_at);
+  }
   const filtered = occurrences.filter(item => {
     const termMatches = `${item.title} ${item.location} ${item.description}`.toLocaleLowerCase('pt-BR').includes(search.toLocaleLowerCase('pt-BR'));
     const filterMatches = filter === 'all' || (filter === 'critical' && item.priority === 'critical') || (filter === 'overdue' && overdueIds.has(item.id)) || (filter === item.status);
@@ -369,7 +375,7 @@ function OccurrencesPage({ occurrences, role, overdueIds, loading, onOpen, onNew
     <section className="panel list-panel">
       <div className="list-toolbar"><div className="quick-filters">{[['all', 'Todas'], ['critical', 'Críticas'], ['overdue', 'Atrasadas'], ['open', 'Abertas'], ['in_progress', 'Em andamento']].map(([value, label]) => <button key={value} onClick={() => setFilter(value)} className={`filter-chip ${filter === value ? 'selected' : ''}`}>{label}{value === 'overdue' && <span>{overdueIds.size}</span>}</button>)}</div><label className="search-box"><Search size={16} /><input value={search} onChange={event => setSearch(event.target.value)} placeholder="Buscar chamado ou local" /></label></div>
       <div className="table-scroll"><table className="data-table"><thead><tr><th>Chamado</th><th>Categoria</th><th>Prioridade</th><th>Status</th><th>Abertura</th><th>Prazo de tarefa</th><th /></tr></thead><tbody>
-        {filtered.map(item => <tr key={item.id} className={overdueIds.has(item.id) ? 'row-overdue' : ''}><td><button className="row-title" onClick={() => onOpen(item.id)}>{item.title}</button><span className="cell-sub"><MapPin size={12} />{item.location}</span></td><td><CategoryPill value={item.category} /></td><td><PriorityBadge value={item.priority} /></td><td><StatusBadge value={item.status} /></td><td>{asDate(item.created_at)}</td><td>{overdueIds.has(item.id) ? <span className="late-text">Prazo vencido</span> : <span className="muted">{item.tasks?.[0]?.due_at ? asDate(item.tasks[0].due_at) : '—'}</span>}</td><td><button className="row-open" onClick={() => onOpen(item.id)} aria-label={`Abrir ${item.title}`}><ArrowRight size={16} /></button></td></tr>)}
+        {filtered.map(item => <tr key={item.id} className={overdueIds.has(item.id) ? 'row-overdue' : ''}><td><button className="row-title" onClick={() => onOpen(item.id)}>{item.title}</button><span className="cell-sub"><MapPin size={12} />{item.location}</span></td><td><CategoryPill value={item.category} /></td><td><PriorityBadge value={item.priority} /></td><td><StatusBadge value={item.status} /></td><td>{asDate(item.created_at)}</td><td>{overdueIds.has(item.id) ? <span className="late-text">Prazo vencido</span> : <span className="muted">{deadlines.has(item.id) ? asDate(deadlines.get(item.id)) : '—'}</span>}</td><td><button className="row-open" onClick={() => onOpen(item.id)} aria-label={`Abrir ${item.title}`}><ArrowRight size={16} /></button></td></tr>)}
       </tbody></table></div>
       {!filtered.length && <EmptyState title={loading ? 'Carregando ocorrências' : 'Nenhuma ocorrência encontrada'} detail={loading ? 'Buscando dados do backend.' : role === 'tenant' ? 'Os chamados que você abrir neste navegador aparecerão aqui.' : 'Tente ajustar os filtros ou registre um novo chamado.'} action={!loading ? <button className="button button-secondary" onClick={onNew}><Plus size={15} />Registrar ocorrência</button> : null} />}
       <div className="table-footer">Exibindo {filtered.length} de {occurrences.length} ocorrências</div>
@@ -413,17 +419,22 @@ function OccurrenceDetailPage({ id, role, technicians, equipment, onBack, onChan
   const [taskForm, setTaskForm] = useState({ title: '', details: '', assigned_to: '', due_at: '' });
   const [savingTask, setSavingTask] = useState(false);
   const [taskError, setTaskError] = useState('');
-  const [chosenPriority, setChosenPriority] = useState<Priority>('medium');
-  const [chosenCategory, setChosenCategory] = useState<Category>('other');
+  const [chosenPriority, setChosenPriority] = useState<Priority>('untriaged');
+  const [chosenCategory, setChosenCategory] = useState<Category | ''>('');
   const [chosenTeam, setChosenTeam] = useState('');
   const [chosenRecommendation, setChosenRecommendation] = useState('');
+  const [savingReview, setSavingReview] = useState(false);
   const isAdmin = role === 'manager' || role === 'operator';
 
   const load = useCallback(async () => {
     setLoading(true); setError('');
     try {
       const [detail, history] = await Promise.all([api.occurrence(id), api.history(id)]);
-      setItem(detail); setEvents(history); setChosenPriority(detail.ai_analysis?.suggested_priority || detail.priority); setChosenCategory(detail.ai_analysis?.category || detail.category || 'other'); setChosenTeam(detail.ai_analysis?.suggested_team || detail.assigned_team || ''); setChosenRecommendation(detail.ai_analysis?.recommendation || detail.recommendation || '');
+      setItem(detail); setEvents(history);
+      setChosenPriority(detail.priority);
+      setChosenCategory(detail.category || '');
+      setChosenTeam(detail.assigned_team || '');
+      setChosenRecommendation(detail.recommendation || '');
     } catch (failure) { setError(failure instanceof Error ? failure.message : 'Não foi possível abrir a ocorrência.'); }
     finally { setLoading(false); }
   }, [id]);
@@ -435,12 +446,14 @@ function OccurrenceDetailPage({ id, role, technicians, equipment, onBack, onChan
     catch (failure) { setError(failure instanceof Error ? failure.message : 'A análise está indisponível. A ocorrência continua salva.'); }
     finally { setAnalyzing(false); }
   };
-  const saveReview = async () => {
+  const saveReview = async (confirmAiReview: boolean) => {
     if (!item) return;
+    setSavingReview(true); setError('');
     try {
-      await api.patchOccurrence(id, { category: chosenCategory, priority: chosenPriority, assigned_team: chosenTeam || null, recommendation: chosenRecommendation || null, confirm_ai_review: true });
-      await load(); await onChange('Revisão da sugestão registrada.');
+      await api.patchOccurrence(id, { category: chosenCategory || null, priority: chosenPriority, assigned_team: chosenTeam.trim() || null, recommendation: chosenRecommendation.trim() || null, ...(confirmAiReview ? { confirm_ai_review: true } : {}) });
+      await load(); await onChange(confirmAiReview ? 'Revisão da sugestão registrada.' : 'Classificação manual salva.');
     } catch (failure) { setError(failure instanceof Error ? failure.message : 'Não foi possível salvar a revisão.'); }
+    finally { setSavingReview(false); }
   };
   const saveTask = async (event: React.FormEvent) => {
     event.preventDefault(); if (!item) return;
@@ -452,8 +465,8 @@ function OccurrenceDetailPage({ id, role, technicians, equipment, onBack, onChan
     finally { setSavingTask(false); }
   };
   const changePriority = async (value: Priority) => {
-    setChosenPriority(value);
-    try { const result = await api.patchOccurrence(id, { priority: value }); setItem(result); await onChange('Prioridade atualizada.'); }
+    setError('');
+    try { await api.patchOccurrence(id, { priority: value }); await load(); await onChange('Prioridade atualizada.'); }
     catch (failure) { setError(failure instanceof Error ? failure.message : 'Não foi possível alterar a prioridade.'); }
   };
   if (loading) return <div className="page-loading"><LoaderCircle className="spin" />Carregando ocorrência…</div>;
@@ -474,7 +487,28 @@ function OccurrenceDetailPage({ id, role, technicians, equipment, onBack, onChan
       <section className="panel detail-card"><PanelHeader title="Histórico da ocorrência" detail="Atividades registradas pela API" />{events.length ? <ol className="timeline">{events.map(event => <li key={event.id}><span className="timeline-marker" /><div className="timeline-content"><small>{asDate(event.created_at)}</small><strong>{historyLabel(event)}</strong><p>{eventDescription(event)}</p></div></li>)}</ol> : <EmptyState title="Sem atividades no histórico" detail="As alterações feitas no sistema aparecerão aqui." />}</section>
     </div><aside className="detail-side">
       <section className="panel ai-card"><div className="ai-card-head"><span className="ai-icon"><Sparkles size={17} /></span><div><strong>Análise de IA</strong><small>Apoio à triagem</small></div></div>
-        {item.ai_analysis ? <><div className={`analysis-source ${item.ai_analysis.is_simulation ? 'simulated' : ''}`}><span className="source-dot" />{item.ai_analysis.is_simulation ? 'Resultado de simulação' : 'Resposta do modelo'}</div><div className="suggestion-block"><small>PRIORIDADE SUGERIDA</small><PriorityBadge value={item.ai_analysis.suggested_priority} /></div><p className="ai-rationale">{item.ai_analysis.rationale}</p><div className="field compact-field"><label htmlFor="review-category">Categoria</label><select id="review-category" value={chosenCategory} disabled={!canEdit} onChange={event => setChosenCategory(event.target.value as Category)}>{Object.entries(CATEGORY_LABEL).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></div><div className="field compact-field"><label htmlFor="review-priority">Prioridade final</label><select id="review-priority" value={chosenPriority} disabled={!canEdit} onChange={event => setChosenPriority(event.target.value as Priority)}>{PRIORITIES.map(value => <option key={value} value={value}>{PRIORITY_LABEL[value]}</option>)}</select></div><div className="field compact-field"><label htmlFor="review-team">Equipe indicada</label><input id="review-team" value={chosenTeam} disabled={!canEdit} onChange={event => setChosenTeam(event.target.value)} /></div><div className="field compact-field"><label htmlFor="review-rec">Recomendação</label><textarea id="review-rec" rows={3} value={chosenRecommendation} disabled={!canEdit} onChange={event => setChosenRecommendation(event.target.value)} /></div>{canEdit && <button className="button button-primary button-full" onClick={saveReview}>Confirmar revisão</button>}</> : <><p className="ai-empty">A ocorrência está salva. Solicite uma análise quando quiser apoio para classificar e encaminhar.</p>{canEdit && <button className="button button-ai button-full" onClick={runAnalysis} disabled={analyzing}>{analyzing ? <LoaderCircle className="spin" size={16} /> : <Sparkles size={16} />}{analyzing ? 'Analisando…' : 'Solicitar análise'}</button>}</>}
+        {item.ai_analysis ? <>
+          <div className={`analysis-source ${item.ai_analysis.is_simulation ? 'simulated' : ''}`}><span className="source-dot" />{item.ai_analysis.is_simulation ? 'Resultado de simulação' : 'Resposta do modelo'}</div>
+          <div className="suggestion-block"><small>PRIORIDADE SUGERIDA</small><PriorityBadge value={item.ai_analysis.suggested_priority} /></div>
+          <p className="ai-rationale">{item.ai_analysis.rationale}</p>
+          <p className="ai-rationale">{CATEGORY_LABEL[item.ai_analysis.category]} · {item.ai_analysis.suggested_team}</p>
+          <p className="ai-rationale">{item.ai_analysis.recommendation}</p>
+          {item.ai_reviewed_at && <p className="muted">Revisão registrada em {asDate(item.ai_reviewed_at)}</p>}
+          {canEdit && <button className="button button-secondary button-full" disabled={savingReview || analyzing} onClick={() => {
+            const suggestion = item.ai_analysis!;
+            setChosenCategory(suggestion.category); setChosenPriority(suggestion.suggested_priority);
+            setChosenTeam(suggestion.suggested_team); setChosenRecommendation(suggestion.recommendation);
+          }}>Usar sugestões no formulário</button>}
+        </> : <p className="ai-empty">A ocorrência está salva. Você pode classificá-la manualmente ou solicitar apoio da IA.</p>}
+        {canEdit && <button className="button button-ai button-full" onClick={runAnalysis} disabled={analyzing || savingReview}>{analyzing ? <LoaderCircle className="spin" size={16} /> : <Sparkles size={16} />}{analyzing ? 'Analisando…' : item.ai_analysis ? 'Solicitar nova análise' : 'Solicitar análise'}</button>}
+        <div className="field compact-field"><label htmlFor="review-category">Categoria final</label><select id="review-category" value={chosenCategory} disabled={!canEdit || savingReview || analyzing} onChange={event => setChosenCategory(event.target.value as Category | '')}><option value="">Sem categoria</option>{Object.entries(CATEGORY_LABEL).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></div>
+        <div className="field compact-field"><label htmlFor="review-priority">Prioridade final</label><select id="review-priority" value={chosenPriority} disabled={!canEdit || savingReview || analyzing} onChange={event => setChosenPriority(event.target.value as Priority)}>{PRIORITIES.map(value => <option key={value} value={value}>{PRIORITY_LABEL[value]}</option>)}</select></div>
+        <div className="field compact-field"><label htmlFor="review-team">Equipe indicada</label><input id="review-team" maxLength={240} value={chosenTeam} disabled={!canEdit || savingReview || analyzing} onChange={event => setChosenTeam(event.target.value)} /></div>
+        <div className="field compact-field"><label htmlFor="review-rec">Recomendação</label><textarea id="review-rec" maxLength={5000} rows={3} value={chosenRecommendation} disabled={!canEdit || savingReview || analyzing} onChange={event => setChosenRecommendation(event.target.value)} /></div>
+        {canEdit && <>
+          <button className="button button-secondary button-full" disabled={savingReview || analyzing} onClick={() => void saveReview(false)}>Salvar classificação manual</button>
+          {item.ai_analysis && <button className="button button-primary button-full" disabled={savingReview || analyzing} onClick={() => void saveReview(true)}>Confirmar revisão</button>}
+        </>}
         <div className="human-review-note"><ShieldCheck size={15} /><span>A sugestão não altera a tarefa nem substitui a decisão da equipe.</span></div>
       </section>
       <section className="panel compact-status"><PanelHeader title="Classificação atual" /><div className="field compact-field"><label htmlFor="priority-current">Prioridade</label><select id="priority-current" disabled={!canEdit} value={item.priority} onChange={event => void changePriority(event.target.value as Priority)}>{PRIORITIES.map(value => <option key={value} value={value}>{PRIORITY_LABEL[value]}</option>)}</select></div>{canEdit && <label className="field compact-field"><span>Status</span><select value={item.status} onChange={async event => { try { await api.patchOccurrence(item.id, { status: event.target.value }); await onChange('Status da ocorrência atualizado.'); await load(); } catch (failure) { setError(failure instanceof Error ? failure.message : 'Não foi possível atualizar o status.'); } }}><option value="open">Aberta</option><option value="in_progress">Em andamento</option><option value="resolved">Resolvida</option></select></label>}<div className="lease-note"><small>RESPONSABILIDADE ILUSTRATIVA</small><p>{suggestedResponsibility(item.location)}</p><span>Sem leitura de contrato ou decisão automática.</span></div></section>

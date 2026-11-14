@@ -1,5 +1,5 @@
 import type {
-  DashboardSummary, Equipment, HistoryEvent, Occurrence, OccurrenceCreate,
+  AiAnalysis, DashboardSummary, Equipment, HistoryEvent, Occurrence, OccurrenceCreate,
   Task, TaskCreate, User,
 } from '../types/api';
 
@@ -52,7 +52,7 @@ export const api = {
   occurrence: (id: string) => request<Occurrence>(`/occurrences/${id}`),
   createOccurrence: (payload: OccurrenceCreate) => request<Occurrence>('/occurrences', { method: 'POST', body: JSON.stringify(payload) }),
   patchOccurrence: (id: string, payload: Record<string, unknown>) => request<Occurrence>(`/occurrences/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
-  analyze: (id: string) => request<Occurrence>(`/occurrences/${id}/analyze`, { method: 'POST' }),
+  analyze: (id: string) => request<AiAnalysis>(`/occurrences/${id}/analyze`, { method: 'POST' }),
   history: (id: string) => request<HistoryEvent[]>(`/occurrences/${id}/history`),
   tasks: (filters: Record<string, string | undefined> = {}) => request<Task[]>(`/tasks${query(filters)}`),
   createTask: (payload: TaskCreate) => request<Task>('/tasks', { method: 'POST', body: JSON.stringify(payload) }),
