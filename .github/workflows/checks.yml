@@ -1,0 +1,77 @@
+name: Frontend checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18.7
+        env:
+          POSTGRES_USER: smartmall
+          POSTGRES_PASSWORD: ci_only_password
+          POSTGRES_DB: smartmall_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U smartmall -d smartmall_e2e"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql+psycopg://smartmall:ci_only_password@localhost:5432/smartmall_e2e
+      AI_SIMULATION: 'true'
+      CORS_ORIGINS: http://localhost:5173
+      E2E_API_URL: http://127.0.0.1:8000/api/v1
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: frontend
+      - uses: actions/checkout@v7
+        with:
+          repository: SmartMall-AI/be-smartmall-ai
+          ref: a335e02a63a201c5381417c9a83d2d1de89d6f55
+          path: backend
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: python -m pip install uv==0.13.8
+      - run: uv sync --frozen
+        working-directory: backend
+      - run: uv run --no-sync alembic upgrade head
+        working-directory: backend
+      - name: Start isolated API with explicit AI simulation
+        working-directory: backend
+        run: |
+          uv run --no-sync uvicorn app.main:app --host 127.0.0.1 --port 8000 > ../backend-e2e.log 2>&1 &
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8000/health/ready; then exit 0; fi
+            sleep 1
+          done
+          cat ../backend-e2e.log
+          exit 1
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v6
+        if: failure()
+        with:
+          name: frontend-failure-evidence
+          path: |
+            frontend/test-results
+            backend-e2e.log
