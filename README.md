@@ -1,58 +1,51 @@
 # SmartMall AI Frontend
 
-Interface para registrar ocorrências, revisar sugestões de IA, atribuir tarefas e acompanhar a operação do shopping.
+Protótipo de interface para acompanhar ocorrências, revisar sugestões de IA, distribuir tarefas e consultar equipamentos do shopping.
 
-**Estado:** estrutura inicial; as telas e a integração ainda precisam ser implementadas. Não há aplicação executável neste repositório.
+## Executar localmente
 
-## Tecnologias previstas
+Requisitos: Node.js 20.19+ ou 22.12+.
 
-React, TypeScript, Vite, Tailwind CSS, shadcn/ui e Recharts, conforme o planejamento técnico. As versões serão definidas e fixadas na implementação.
-
-## Organização
-
-```text
-src/
-  components/ componentes reutilizáveis
-  pages/      telas e navegação
-  services/   cliente HTTP e acesso à API
-  hooks/      lógica compartilhada da interface
-  types/      tipos alinhados ao contrato da API
+```bash
+npm install
 ```
 
-Os diretórios estão reservados para a implementação. Não existem componentes funcionais ainda.
+Configure `VITE_API_BASE_URL` no arquivo `.env.local`. O padrão do `.env.example` é `http://localhost:8000/api/v1`.
 
-## Telas previstas
+```bash
+npm run dev
+```
 
-| Tela | Fluxo principal |
-| --- | --- |
-| Dashboard | Consultar indicadores e pendências |
-| Ocorrências | Listar e filtrar registros |
-| Nova ocorrência | Informar título, descrição e local |
-| Detalhe da ocorrência | Solicitar análise, revisar sugestões e encaminhar |
-| Tarefas | Atribuir responsável, definir prazo e atualizar status |
-| Equipamentos | Consultar cadastro e situação operacional |
+Para gerar os arquivos de publicação:
 
-## Integração
+```bash
+npm run build
+npm run preview
+```
 
-O repositório [docs-smartmall-ai](https://github.com/SmartMall-AI/docs-smartmall-ai) mantém [contrato-api.md](https://github.com/SmartMall-AI/docs-smartmall-ai/blob/main/contrato-api.md). Todas as chamadas devem passar pelo cliente em `src/services/` quando ele for implementado.
+## O que está incluído
 
-A API fica em [be-smartmall-ai](https://github.com/SmartMall-AI/be-smartmall-ai).
+- Painel com indicadores, distribuição por prioridade, fila de atenção e tarefas próximas.
+- Lista de ocorrências com busca, filtros por prioridade, status e atrasos.
+- Abertura de ocorrência sem exigir uma data do solicitante.
+- Detalhe com histórico, análise de IA, revisão humana, encaminhamento e criação de tarefa com prazo.
+- Tarefas para operação e equipe técnica, com atualização rápida de status.
+- Consulta e cadastro de equipamentos.
+- Registro manual de mensagem de rádio para revisão e confirmação de status.
+- Seletor de perfil demonstrativo para navegar pelas áreas de gestão, operação, técnico e lojista.
 
-`.env.example` propõe `VITE_API_BASE_URL` para o endereço da API. Variáveis com prefixo `VITE_` ficam expostas no frontend; não colocar chaves do provedor de IA nelas.
+## Limites da demonstração
 
-## Comportamento esperado
+O seletor de perfil apenas muda a navegação no navegador. A API documentada ainda não implementa autenticação nem controle de permissões; portanto, isso não é uma barreira de segurança.
 
-- Exibir estados de carregamento, falha e listas vazias.
-- Confirmar cadastro somente após resposta de sucesso da API.
-- Preservar a ocorrência quando a análise estiver indisponível.
-- Identificar sugestões de IA e qualquer simulação demonstrativa.
-- Permitir revisão das sugestões antes da aplicação.
-- Adaptar a navegação e os formulários para telas menores.
+A tela de rádio não captura áudio nem transcreve automaticamente. Ela simula a anotação manual e guarda o texto localmente neste navegador; apenas a mudança de status da tarefa é enviada à API. A API também não oferece um campo de prazo na ocorrência; prazos são definidos nas tarefas.
 
-Acrescentar instruções de instalação e execução quando a aplicação for criada.
+Os dados operacionais vêm da API e não são substituídos por exemplos locais quando ela está indisponível. Para a experiência completa, execute o backend e configure `VITE_API_BASE_URL`.
 
-## Liderança e contribuição
+## API e documentação
 
-[@geraldojoao](https://github.com/geraldojoao) lidera o projeto e coordena a revisão e a integração das alterações. Trabalhe em uma branch e abra um pull request para `main`, conforme [CONTRIBUTING.md](CONTRIBUTING.md).
+- [Contrato da API](https://github.com/SmartMall-AI/docs-smartmall-ai/blob/main/contrato-api.md)
+- [Backend](https://github.com/SmartMall-AI/be-smartmall-ai)
+- [Contribuição e revisão](CONTRIBUTING.md)
 
-Para conhecer a proposta e consultar as evidências, veja o [roteiro para a banca](https://github.com/SmartMall-AI/docs-smartmall-ai/blob/main/avaliacao.md).
+Não coloque chaves do provedor de IA no frontend ou em variáveis `VITE_`: esses valores ficam visíveis no navegador.
