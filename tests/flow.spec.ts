@@ -1,11 +1,21 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test as base, expect, type Page } from '@playwright/test';
 
 const apiUrl = process.env.E2E_API_URL || 'http://127.0.0.1:8000/api/v1';
+const accessCode = process.env.E2E_ACCESS_TOKEN || '';
+const test = base.extend({
+  request: async ({ playwright }, use) => {
+    const context = await playwright.request.newContext({
+      extraHTTPHeaders: accessCode ? { Authorization: `Bearer ${accessCode}` } : {},
+    });
+    try { await use(context); } finally { await context.dispose(); }
+  },
+});
 
 async function login(page: Page, username = 'marina', password = 'marina123') {
   await page.goto('/');
   await page.getByLabel('Usuário fictício').fill(username);
   await page.getByLabel('Senha fictícia', { exact: true }).fill(password);
+  if (accessCode) await page.getByLabel('Código de acesso ao ambiente').fill(accessCode);
   await page.getByRole('button', { name: 'Entrar na demonstração' }).click();
   await expect(page.locator('.connection-state')).toHaveText('Conectado à API');
 }
@@ -154,4 +164,23 @@ test('API indisponível mostra erro e permite recuperar os dados', async ({ page
   await page.getByRole('button', { name: 'Tentar novamente', exact: true }).click();
   await expect(page.locator('.api-alert')).toHaveCount(0);
   await expect(page.locator('.connection-state')).toHaveText('Conectado à API');
+});
+
+test('código privado é validado pelo servidor e removido ao sair', async ({ page }) => {
+  test.skip(!accessCode, 'Requer API configurada com DEMO_ACCESS_TOKEN.');
+  await page.goto('/');
+  await page.getByLabel('Usuário fictício').fill('marina');
+  await page.getByLabel('Senha fictícia', { exact: true }).fill('marina123');
+  await page.getByLabel('Código de acesso ao ambiente').fill('codigo-incorreto');
+  await page.getByRole('button', { name: 'Entrar na demonstração' }).click();
+  await expect(page.getByRole('alert')).toContainText('Código de acesso ausente ou inválido.');
+  await expect(page.getByRole('heading', { name: 'Acesse sua conta' })).toBeVisible();
+  await page.getByLabel('Código de acesso ao ambiente').fill(accessCode);
+  await page.getByRole('button', { name: 'Entrar na demonstração' }).click();
+  await expect(page.locator('.connection-state')).toHaveText('Conectado à API');
+  const menu = page.getByRole('button', { name: 'Abrir menu', exact: true });
+  if (await menu.isVisible()) await menu.click();
+  await page.getByRole('button', { name: 'Sair da demonstração' }).click();
+  await expect(page.getByLabel('Código de acesso ao ambiente')).toHaveValue('');
+  expect(await page.evaluate(() => sessionStorage.getItem('sm-demo-access'))).toBeNull();
 });

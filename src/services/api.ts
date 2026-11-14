@@ -4,6 +4,13 @@ import type {
 } from '../types/api';
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1').replace(/\/$/, '');
+export const DEMO_ACCESS_REQUIRED = import.meta.env.VITE_DEMO_ACCESS_REQUIRED === 'true';
+const ACCESS_KEY = 'sm-demo-access';
+export const demoAccess = {
+  get: () => sessionStorage.getItem(ACCESS_KEY) || '',
+  set: (token: string) => sessionStorage.setItem(ACCESS_KEY, token),
+  clear: () => sessionStorage.removeItem(ACCESS_KEY),
+};
 
 export class ApiError extends Error {
   status: number;
@@ -16,10 +23,11 @@ export class ApiError extends Error {
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response;
+  const token = demoAccess.get();
   try {
     response = await fetch(`${API_BASE}${path}`, {
       ...init,
-      headers: { 'Content-Type': 'application/json', ...init?.headers },
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...init?.headers },
     });
   } catch {
     throw new ApiError(`Não foi possível conectar à API em ${API_BASE}.`, 0);
@@ -47,6 +55,7 @@ const query = (values: Record<string, string | undefined>) => {
 
 export const api = {
   baseUrl: API_BASE,
+  access: (token: string) => request<{ access_required: boolean }>('/access', { headers: { Authorization: `Bearer ${token}` } }),
   summary: () => request<DashboardSummary>('/dashboard/summary'),
   occurrences: (filters: Record<string, string | undefined> = {}) => request<Occurrence[]>(`/occurrences${query(filters)}`),
   occurrence: (id: string) => request<Occurrence>(`/occurrences/${id}`),

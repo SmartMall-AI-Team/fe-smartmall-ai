@@ -8,7 +8,7 @@ import {
 import {
   Cell, Pie, PieChart, ResponsiveContainer, Tooltip,
 } from 'recharts';
-import { api } from './services/api';
+import { api, DEMO_ACCESS_REQUIRED, demoAccess } from './services/api';
 import type { FormEvent } from 'react';
 import type {
   Category, DashboardSummary, Equipment, HistoryEvent, Occurrence,
@@ -60,7 +60,7 @@ function inferRadioStatus(text: string): TaskStatus | null {
 }
 
 function App() {
-  const [authenticated, setAuthenticated] = useState(() => sessionStorage.getItem('sm-demo-auth-v2') === 'true');
+  const [authenticated, setAuthenticated] = useState(() => sessionStorage.getItem('sm-demo-auth-v2') === 'true' && (!DEMO_ACCESS_REQUIRED || Boolean(demoAccess.get())));
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem('sm-theme');
     if (saved === 'light' || saved === 'dark') return saved;
@@ -216,7 +216,7 @@ function App() {
           {role === 'technician' && <select className="sidebar-select user-select" aria-label="Selecionar técnico" value={technicianId} onChange={event => updateTechnician(event.target.value)}>{technicians.length ? technicians.map(person => <option key={person.id} value={person.id}>{person.name}</option>) : <option value="">Nenhum técnico cadastrado</option>}</select>}
           <div className="sidebar-user"><div className="avatar">{userLabel.slice(0, 1).toLocaleUpperCase('pt-BR')}</div><div><strong>{userLabel}</strong><span>{roleLabel}</span></div><ChevronDown size={15} /></div>
           <p className="demo-note">Os perfis apenas mudam a navegação. A API ainda não implementa autenticação nem permissões.</p>
-          <button className="demo-logout" onClick={() => { sessionStorage.removeItem('sm-demo-auth-v2'); setAuthenticated(false); }}><LogOut size={14} /> Sair da demonstração</button>
+          <button className="demo-logout" onClick={() => { sessionStorage.removeItem('sm-demo-auth-v2'); demoAccess.clear(); setAuthenticated(false); }}><LogOut size={14} /> Sair da demonstração</button>
         </div>
       </aside>
 
@@ -244,8 +244,10 @@ function LoginPage({ theme, onToggleTheme, onContinue }: { theme: Theme; onToggl
   const [password, setPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [error, setError] = useState('');
+  const [accessCode, setAccessCode] = useState('');
+  const [checkingAccess, setCheckingAccess] = useState(false);
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!user.trim() || !password) {
       setError('Preencha usuário e senha para continuar.');
@@ -257,6 +259,22 @@ function LoginPage({ theme, onToggleTheme, onContinue }: { theme: Theme; onToggl
       return;
     }
     setError('');
+    if (DEMO_ACCESS_REQUIRED) {
+      if (!accessCode.trim()) {
+        setError('Informe o código privado fornecido pela organização.');
+        return;
+      }
+      setCheckingAccess(true);
+      try {
+        await api.access(accessCode.trim());
+        demoAccess.set(accessCode.trim());
+      } catch (failure) {
+        setError(failure instanceof Error ? failure.message : 'Não foi possível validar o acesso.');
+        return;
+      } finally {
+        setCheckingAccess(false);
+      }
+    }
     onContinue(account);
   };
 
@@ -270,12 +288,13 @@ function LoginPage({ theme, onToggleTheme, onContinue }: { theme: Theme; onToggl
         <p className="login-subtitle">Entre para acompanhar as operações do shopping.</p>
         <div className="login-demo-notice"><ShieldCheck size={16} /><span>Ambiente de demonstração. O perfil define a tela inicial.</span></div>
         <form className="login-form" onSubmit={submit}>
+          {DEMO_ACCESS_REQUIRED && <label className="login-field"><span>Código de acesso ao ambiente</span><input type="password" required autoComplete="off" value={accessCode} onChange={event => { setAccessCode(event.target.value); setError(''); }} placeholder="Código privado da demonstração" /><small>Fornecido pela organização. Os perfis abaixo continuam sendo fictícios.</small></label>}
           <label className="login-field"><span>Usuário fictício</span><input value={user} onChange={event => { setUser(event.target.value); setError(''); }} autoComplete="username" placeholder="Digite o usuário de teste" /></label>
           <label className="login-field"><span>Senha fictícia</span><span className="login-password-wrap"><input type={passwordVisible ? 'text' : 'password'} value={password} onChange={event => { setPassword(event.target.value); setError(''); }} autoComplete="current-password" placeholder="Digite uma senha de demonstração" /><button type="button" className="login-password-toggle" onClick={() => setPasswordVisible(value => !value)} aria-label={passwordVisible ? 'Ocultar senha' : 'Mostrar senha'}>{passwordVisible ? <EyeOff size={17} /> : <Eye size={17} />}</button></span></label>
           <p className="login-demo-copy">Somente as contas fictícias abaixo funcionam. Os dados ficam no navegador e não são enviados ao backend.</p>
           <details className="login-demo-accounts"><summary>Ver contas fictícias para teste</summary><div className="login-account-list">{DEMO_ACCOUNTS.map(account => <button type="button" key={account.username} onClick={() => { setUser(account.username); setPassword(account.password); setError(''); }}><strong>{account.label}</strong><span>Usuário: {account.username} · Senha: {account.password}</span></button>)}</div></details>
           {error && <p className="login-error" role="alert">{error}</p>}
-          <button className="login-submit" type="submit">Entrar na demonstração <ArrowRight size={16} /></button>
+          <button className="login-submit" type="submit" disabled={checkingAccess}>{checkingAccess ? 'Validando acesso…' : 'Entrar na demonstração'} <ArrowRight size={16} /></button>
         </form>
         <p className="login-footer">A autenticação real será conectada ao backend quando estiver disponível. Após entrar, você ainda pode trocar o perfil no canto inferior esquerdo.</p>
       </section>

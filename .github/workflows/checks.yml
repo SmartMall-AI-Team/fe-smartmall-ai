@@ -27,6 +27,11 @@ jobs:
     env:
       DATABASE_URL: postgresql+psycopg://smartmall:ci_only_password@localhost:5432/smartmall_e2e
       AI_SIMULATION: 'true'
+      APP_ENV: demo
+      DEMO_SEED: 'true'
+      # Código fictício exclusivo do banco descartável do CI; não é segredo do deploy.
+      DEMO_ACCESS_TOKEN: test-only-access-code-with-more-than-32-characters
+      E2E_ACCESS_TOKEN: test-only-access-code-with-more-than-32-characters
       CORS_ORIGINS: http://localhost:5173
       E2E_API_URL: http://127.0.0.1:8000/api/v1
     defaults:
@@ -39,7 +44,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           repository: SmartMall-AI/be-smartmall-ai
-          ref: a335e02a63a201c5381417c9a83d2d1de89d6f55
+          ref: 5503157644ceac1c99922902cda45ead27e8b8fd
           path: backend
       - uses: actions/setup-node@v6
         with:
@@ -60,7 +65,7 @@ jobs:
       - name: Start isolated API with explicit AI simulation
         working-directory: backend
         run: |
-          uv run --no-sync uvicorn app.main:app --host 127.0.0.1 --port 8000 > ../backend-e2e.log 2>&1 &
+          uv run --no-sync python -m app.deploy > ../backend-e2e.log 2>&1 &
           for attempt in $(seq 1 30); do
             if curl --fail --silent http://127.0.0.1:8000/health/ready; then exit 0; fi
             sleep 1
