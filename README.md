@@ -25,6 +25,7 @@ npm run preview
 
 ## O que está incluído
 
+- Tela de entrada demonstrativa com layout mobile-first e alternância entre tema claro e escuro.
 - Painel com indicadores, distribuição por prioridade, fila de atenção e tarefas próximas.
 - Lista de ocorrências com busca, filtros por prioridade, status e atrasos.
 - Abertura de ocorrência sem exigir uma data do solicitante.
@@ -33,10 +34,11 @@ npm run preview
 - Consulta e cadastro de equipamentos.
 - Registro manual de mensagem de rádio para revisão e confirmação de status.
 - Seletor de perfil demonstrativo para navegar pelas áreas de gestão, operação, técnico e lojista.
+- Preferência de tema salva neste navegador e, quando não há escolha anterior, baseada na configuração do sistema.
 
 ## Limites da demonstração
 
-O seletor de perfil apenas muda a navegação no navegador. A API documentada ainda não implementa autenticação nem controle de permissões; portanto, isso não é uma barreira de segurança.
+O acesso e o seletor de perfil são apenas demonstrativos. O formulário não valida, envia nem armazena as credenciais digitadas; qualquer usuário e senha preenchidos permitem entrar no protótipo. A API documentada ainda não implementa autenticação nem controle de permissões; portanto, isso não é uma barreira de segurança.
 
 A tela de rádio não captura áudio nem transcreve automaticamente. Ela simula a anotação manual e guarda o texto localmente neste navegador; apenas a mudança de status da tarefa é enviada à API. A API também não oferece um campo de prazo na ocorrência; prazos são definidos nas tarefas.
 

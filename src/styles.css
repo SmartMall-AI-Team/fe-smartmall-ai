@@ -286,3 +286,147 @@ h1, h2, p { margin-top: 0; }
 .demo-logout { width: 100%; display: flex; align-items: center; justify-content: center; gap: 7px; margin-top: 11px; padding: 8px; color: #aeb7c2; background: transparent; border: 1px solid #ffffff1c; border-radius: 7px; font-size: 9px; }
 .demo-logout:hover { color: #fff; background: #ffffff0c; }
 @media (max-width: 520px) { .login-screen { padding: 15px; background: #f5f6f8; } .login-card { padding: 27px 22px; border-radius: 14px; } .login-brand { margin-bottom: 28px; } .login-card h1 { font-size: 24px; } }
+
+.theme-toggle, .login-theme-toggle { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 34px; padding: 0 10px; color: #586371; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; font-size: 10px; font-weight: 650; }
+.theme-toggle:hover, .login-theme-toggle:hover { border-color: #d28a62; color: #a7532d; }
+.theme-toggle svg, .login-theme-toggle svg { color: #d77a28; }
+.login-theme-toggle { position: absolute; top: 22px; right: 24px; min-height: 40px; padding: 0 12px; border-radius: 999px; }
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --ink: #edf0f4;
+  --muted: #a1aab7;
+  --line: #343943;
+  --surface: #1b1e24;
+  --canvas: #12151a;
+  --nav: #171d27;
+  --nav-muted: #aab3bf;
+  --shadow: 0 2px 8px rgba(0, 0, 0, .18), 0 14px 30px rgba(0, 0, 0, .15);
+}
+html[data-theme="dark"] body { color: var(--ink); background: var(--canvas); }
+html[data-theme="dark"] .sidebar { background: var(--nav); }
+html[data-theme="dark"] .main-area { color: var(--ink); }
+html[data-theme="dark"] .topbar { background: rgba(23, 27, 34, .9); border-color: var(--line); }
+html[data-theme="dark"] .breadcrumbs,
+html[data-theme="dark"] .topbar-right,
+html[data-theme="dark"] .page-heading p,
+html[data-theme="dark"] .metric-top,
+html[data-theme="dark"] .metric-note,
+html[data-theme="dark"] .panel-header span,
+html[data-theme="dark"] .donut-center span,
+html[data-theme="dark"] .legend-list div,
+html[data-theme="dark"] .attention-row,
+html[data-theme="dark"] .attention-copy small,
+html[data-theme="dark"] .week-strip > div,
+html[data-theme="dark"] .agenda-time,
+html[data-theme="dark"] .agenda-item small,
+html[data-theme="dark"] .status-footer,
+html[data-theme="dark"] .loading-line,
+html[data-theme="dark"] .filter-chip,
+html[data-theme="dark"] .data-table td,
+html[data-theme="dark"] .cell-sub,
+html[data-theme="dark"] .table-footer,
+html[data-theme="dark"] .muted,
+html[data-theme="dark"] .field,
+html[data-theme="dark"] .field > span,
+html[data-theme="dark"] .compact-field label,
+html[data-theme="dark"] .detail-meta,
+html[data-theme="dark"] .description-text,
+html[data-theme="dark"] .task-card-copy small,
+html[data-theme="dark"] .timeline-content small,
+html[data-theme="dark"] .timeline-content p,
+html[data-theme="dark"] .ai-card-head small,
+html[data-theme="dark"] .suggestion-block > small,
+html[data-theme="dark"] .ai-rationale,
+html[data-theme="dark"] .human-review-note,
+html[data-theme="dark"] .ai-empty,
+html[data-theme="dark"] .equipment-card-title small,
+html[data-theme="dark"] .equipment-card-location,
+html[data-theme="dark"] .equipment-card-foot,
+html[data-theme="dark"] .radio-steps li,
+html[data-theme="dark"] .radio-transcript small,
+html[data-theme="dark"] .review-task span,
+html[data-theme="dark"] .review-task small,
+html[data-theme="dark"] .page-loading { color: #a1aab7; }
+html[data-theme="dark"] .breadcrumbs strong,
+html[data-theme="dark"] .page-heading h1,
+html[data-theme="dark"] .detail-heading h1,
+html[data-theme="dark"] .metric-value,
+html[data-theme="dark"] .panel-header h2,
+html[data-theme="dark"] .donut-center strong,
+html[data-theme="dark"] .legend-list strong,
+html[data-theme="dark"] .attention-copy strong,
+html[data-theme="dark"] .week-strip strong,
+html[data-theme="dark"] .agenda-item strong,
+html[data-theme="dark"] .equipment-summary strong,
+html[data-theme="dark"] .search-box input,
+html[data-theme="dark"] .row-title,
+html[data-theme="dark"] .form-section-title strong,
+html[data-theme="dark"] .task-card-copy strong,
+html[data-theme="dark"] .timeline-content strong,
+html[data-theme="dark"] .ai-card-head strong,
+html[data-theme="dark"] .equipment-card-title strong,
+html[data-theme="dark"] .radio-steps h2,
+html[data-theme="dark"] .radio-transcript p,
+html[data-theme="dark"] .review-task strong { color: #edf0f4; }
+html[data-theme="dark"] .metric-card,
+html[data-theme="dark"] .panel,
+html[data-theme="dark"] .attention-row,
+html[data-theme="dark"] .data-table tbody tr,
+html[data-theme="dark"] .field input,
+html[data-theme="dark"] .field select,
+html[data-theme="dark"] .field textarea,
+html[data-theme="dark"] .compact-field input,
+html[data-theme="dark"] .compact-field select,
+html[data-theme="dark"] .compact-field textarea,
+html[data-theme="dark"] .search-box,
+html[data-theme="dark"] .row-open,
+html[data-theme="dark"] .task-card,
+html[data-theme="dark"] .radio-transcript { color: #edf0f4; background: #1b1e24; border-color: #343943; }
+html[data-theme="dark"] .button-secondary { color: #e6eaf0; background: #252a32; border-color: #3b424d; }
+html[data-theme="dark"] .button-secondary:hover,
+html[data-theme="dark"] .button-ghost:hover,
+html[data-theme="dark"] .filter-chip:hover,
+html[data-theme="dark"] .attention-row:hover,
+html[data-theme="dark"] .data-table tbody tr:hover { background: #252a32; }
+html[data-theme="dark"] .button-ghost { color: #b6bec9; }
+html[data-theme="dark"] .theme-toggle,
+html[data-theme="dark"] .login-theme-toggle { color: #e7ebf0; background: #22262d; border-color: #3b424d; }
+html[data-theme="dark"] .attention-row { border-top-color: #343943; }
+html[data-theme="dark"] .data-table th { color: #a1aab7; background: #22262d; }
+html[data-theme="dark"] .data-table td { border-color: #343943; }
+html[data-theme="dark"] .week-strip,
+html[data-theme="dark"] .week-strip > div,
+html[data-theme="dark"] .task-create,
+html[data-theme="dark"] .task-card,
+html[data-theme="dark"] .timeline li:not(:last-child)::before,
+html[data-theme="dark"] .equipment-card-foot,
+html[data-theme="dark"] .human-review-note,
+html[data-theme="dark"] .login-footer { border-color: #343943; }
+html[data-theme="dark"] .week-strip .has-events,
+html[data-theme="dark"] .filter-chip.selected,
+html[data-theme="dark"] .form-note,
+html[data-theme="dark"] .empty-icon,
+html[data-theme="dark"] .task-symbol,
+html[data-theme="dark"] .radio-transcript { background: #252a32; }
+html[data-theme="dark"] .attention-row.overdue,
+html[data-theme="dark"] .data-table tbody tr.row-overdue,
+html[data-theme="dark"] .data-table tbody tr.row-overdue:hover,
+html[data-theme="dark"] .task-card.task-late { background: #332522; border-color: #633a34; }
+html[data-theme="dark"] .field input::placeholder,
+html[data-theme="dark"] .field textarea::placeholder,
+html[data-theme="dark"] .search-box input::placeholder { color: #7f8997; }
+html[data-theme="dark"] .login-screen { background: radial-gradient(ellipse at 50% 0%, #36251d 0, transparent 48%), #111318; }
+html[data-theme="dark"] .login-card { color: #edf0f4; background: #191c22; border-color: #333842; box-shadow: 0 24px 70px rgba(0, 0, 0, .35); }
+html[data-theme="dark"] .login-brand { color: #edf0f4; }
+html[data-theme="dark"] .login-card h1 { color: #f1f3f6; }
+html[data-theme="dark"] .login-subtitle,
+html[data-theme="dark"] .login-demo-copy,
+html[data-theme="dark"] .login-footer { color: #a1aab7; }
+html[data-theme="dark"] .login-demo-notice { color: #e0ad82; background: #30271f; border-color: #57402e; }
+html[data-theme="dark"] .login-field { color: #c4cbd4; }
+html[data-theme="dark"] .login-field input { color: #edf0f4; background: #22262d; border-color: #3b424d; }
+html[data-theme="dark"] .login-field input::placeholder { color: #7f8997; }
+html[data-theme="dark"] .login-password-toggle { color: #a1aab7; }
+html[data-theme="dark"] .login-error { color: #f2a29a; background: #332322; border-color: #633a34; }
+@media (max-width: 520px) { .login-theme-toggle { top: 12px; right: 12px; } .theme-toggle span { display: none; } }

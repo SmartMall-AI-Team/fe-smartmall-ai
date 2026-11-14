@@ -3,7 +3,7 @@ import {
   Activity, AlertCircle, AlertTriangle, ArrowRight, ArrowUpRight,
   Building2, CalendarDays, Check, ChevronDown, Clock3, ClipboardList, Eye, EyeOff, FileText, LogOut,
   LayoutDashboard, ListFilter, LoaderCircle, MapPin, Menu, Plus, Radio,
-  Search, Settings2, ShieldCheck, Sparkles, Store, Wrench, X,
+  Search, Settings2, ShieldCheck, Sparkles, Store, Sun, Moon, Wrench, X,
 } from 'lucide-react';
 import {
   Cell, Pie, PieChart, ResponsiveContainer, Tooltip,
@@ -16,6 +16,7 @@ import type {
 } from './types/api';
 
 type Role = 'manager' | 'operator' | 'technician' | 'tenant';
+type Theme = 'light' | 'dark';
 type Page = 'dashboard' | 'occurrences' | 'new' | 'detail' | 'tasks' | 'equipment' | 'radio';
 
 const PRIORITIES: Priority[] = ['critical', 'high', 'medium', 'low', 'untriaged'];
@@ -51,6 +52,11 @@ function inferRadioStatus(text: string): TaskStatus | null {
 
 function App() {
   const [authenticated, setAuthenticated] = useState(() => sessionStorage.getItem('sm-demo-auth') === 'true');
+  const [theme, setTheme] = useState<Theme>(() => {
+    const saved = localStorage.getItem('sm-theme');
+    if (saved === 'light' || saved === 'dark') return saved;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  });
   const [page, setPage] = useState<Page>('dashboard');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [role, setRole] = useState<Role>(() => (sessionStorage.getItem('sm-demo-role') as Role) || 'manager');
@@ -86,7 +92,11 @@ function App() {
     setLoading(false);
   }, [technicianId]);
 
-  useEffect(() => { void refresh(); }, [refresh]);
+  useEffect(() => { if (authenticated) void refresh(); }, [authenticated, refresh]);
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem('sm-theme', theme);
+  }, [theme]);
   useEffect(() => {
     if (!toast) return;
     const timer = window.setTimeout(() => setToast(''), 3600);
@@ -139,7 +149,7 @@ function App() {
   const userLabel = role === 'tenant' ? tenantName : role === 'technician' ? (currentTechnician?.name || 'Técnico') : role === 'operator' ? 'Equipe operacional' : 'Marina Costa';
 
   if (!authenticated) {
-    return <LoginPage onContinue={() => { sessionStorage.setItem('sm-demo-auth', 'true'); setAuthenticated(true); }} />;
+    return <LoginPage theme={theme} onToggleTheme={() => setTheme(value => value === 'dark' ? 'light' : 'dark')} onContinue={() => { sessionStorage.setItem('sm-demo-auth', 'true'); setAuthenticated(true); }} />;
   }
 
   return (
@@ -181,7 +191,7 @@ function App() {
 
       {mobileOpen && <button className="mobile-scrim" onClick={() => setMobileOpen(false)} aria-label="Fechar menu" />}
       <main className="main-area">
-        <header className="topbar"><button className="icon-button menu-trigger" onClick={() => setMobileOpen(true)} aria-label="Abrir menu"><Menu size={20} /></button><div className="breadcrumbs"><span>Shopping</span><i>/</i><strong>{pageTitle(page, role)}</strong></div><div className="topbar-right"><span className="connection-state"><span className={`connection-dot ${apiError ? 'offline' : ''}`} />{apiError ? 'API indisponível' : loading ? 'Conectando' : 'Conectado à API'}</span><div className="top-avatar">{userLabel.slice(0, 1).toLocaleUpperCase('pt-BR')}</div><strong>{userLabel}</strong></div></header>
+        <header className="topbar"><button className="icon-button menu-trigger" onClick={() => setMobileOpen(true)} aria-label="Abrir menu"><Menu size={20} /></button><div className="breadcrumbs"><span>Shopping</span><i>/</i><strong>{pageTitle(page, role)}</strong></div><button className="theme-toggle" onClick={() => setTheme(value => value === 'dark' ? 'light' : 'dark')} aria-label={theme === 'dark' ? 'Ativar tema claro' : 'Ativar tema escuro'} title={theme === 'dark' ? 'Ativar tema claro' : 'Ativar tema escuro'}>{theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}<span>{theme === 'dark' ? 'Tema claro' : 'Tema escuro'}</span></button><div className="topbar-right"><span className="connection-state"><span className={`connection-dot ${apiError ? 'offline' : ''}`} />{apiError ? 'API indisponível' : loading ? 'Conectando' : 'Conectado à API'}</span><div className="top-avatar">{userLabel.slice(0, 1).toLocaleUpperCase('pt-BR')}</div><strong>{userLabel}</strong></div></header>
         {apiError && <div className="api-alert"><AlertCircle size={18} /><div><strong>Não foi possível atualizar os dados</strong><span>{apiError} Confira VITE_API_BASE_URL e se o backend está em execução.</span></div><button className="button button-secondary button-small" onClick={() => void refresh()}>Tentar novamente</button></div>}
         <div className="page-content">
           {page === 'dashboard' && isAdmin && <DashboardPage summary={summary} occurrences={occurrences} tasks={tasks} overdueIds={overdueOccurrenceIds} loading={loading} onOpen={id => go('detail', id)} onAll={() => go('occurrences')} onTasks={() => go('tasks')} />}
@@ -198,7 +208,7 @@ function App() {
   );
 }
 
-function LoginPage({ onContinue }: { onContinue: () => void }) {
+function LoginPage({ theme, onToggleTheme, onContinue }: { theme: Theme; onToggleTheme: () => void; onContinue: () => void }) {
   const [user, setUser] = useState('');
   const [password, setPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -216,8 +226,9 @@ function LoginPage({ onContinue }: { onContinue: () => void }) {
 
   return (
     <main className="login-screen">
+      <button type="button" className="login-theme-toggle" onClick={onToggleTheme} aria-label={theme === 'dark' ? 'Ativar tema claro' : 'Ativar tema escuro'}>{theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}<span>{theme === 'dark' ? 'Tema claro' : 'Tema escuro'}</span></button>
       <section className="login-card" aria-labelledby="login-title">
-        <div className="login-brand"><img className="login-logo" src="/images/smartmall-logo-light.jpeg" alt="Smart Mall" /></div>
+        <div className="login-brand"><img className="login-logo" src={`/images/smartmall-logo-${theme}.jpeg`} alt="Smart Mall" /></div>
         <p className="login-eyebrow">GESTÃO DE OPERAÇÕES</p>
         <h1 id="login-title">Acesse sua conta</h1>
         <p className="login-subtitle">Entre para acompanhar as operações do shopping.</p>
