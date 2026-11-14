@@ -16,6 +16,6 @@ export default defineConfig({
     command: 'node node_modules/vite/bin/vite.js --host localhost --port 5173 --strictPort',
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
-    env: { VITE_API_BASE_URL: apiUrl },
+    env: { VITE_API_BASE_URL: apiUrl, VITE_DEMO_ACCESS_REQUIRED: process.env.E2E_ACCESS_TOKEN ? 'true' : 'false' },
   },
 });
