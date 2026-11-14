@@ -18,6 +18,15 @@ import type {
 type Role = 'manager' | 'operator' | 'technician' | 'tenant';
 type Theme = 'light' | 'dark';
 type Page = 'dashboard' | 'occurrences' | 'new' | 'detail' | 'tasks' | 'equipment' | 'radio';
+type DemoAccount = { username: string; password: string; label: string; role: Role; tenantName?: string; technicianName?: string };
+
+const DEMO_ACCOUNTS: DemoAccount[] = [
+  { username: 'marina', password: 'marina123', label: 'Marina Costa · Administradora', role: 'manager' },
+  { username: 'operacao', password: 'operacao123', label: 'Equipe operacional', role: 'operator' },
+  { username: 'joao', password: 'joao123', label: 'João Silva · Técnico', role: 'technician', technicianName: 'João Silva' },
+  { username: 'ana', password: 'ana123', label: 'Ana Souza · Loja Zara', role: 'tenant', tenantName: 'Ana Souza · Loja Zara' },
+  { username: 'carlos', password: 'carlos123', label: 'Carlos Lima · Livraria', role: 'tenant', tenantName: 'Carlos Lima · Livraria' },
+];
 
 const PRIORITIES: Priority[] = ['critical', 'high', 'medium', 'low', 'untriaged'];
 const CHART_COLORS = ['#c94d3f', '#e38a44', '#d9b552', '#5a9b7b', '#9ba3ae'];
@@ -51,7 +60,7 @@ function inferRadioStatus(text: string): TaskStatus | null {
 }
 
 function App() {
-  const [authenticated, setAuthenticated] = useState(() => sessionStorage.getItem('sm-demo-auth') === 'true');
+  const [authenticated, setAuthenticated] = useState(() => sessionStorage.getItem('sm-demo-auth-v2') === 'true');
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem('sm-theme');
     if (saved === 'light' || saved === 'dark') return saved;
@@ -86,7 +95,13 @@ function App() {
     if (usersResult.status === 'fulfilled') {
       const active = usersResult.value.filter(user => user.is_active);
       setTechnicians(active);
-      if (!technicianId && active[0]) setTechnicianId(active[0].id);
+      if (!technicianId && active[0]) {
+        const preferredName = sessionStorage.getItem('sm-demo-technician-name');
+        const preferred = active.find(person => person.name.toLocaleLowerCase('pt-BR') === preferredName?.toLocaleLowerCase('pt-BR'));
+        const selected = preferred || active[0];
+        setTechnicianId(selected.id);
+        sessionStorage.setItem('sm-technician-id', selected.id);
+      }
     } else failures.push(usersResult.reason.message);
     if (failures.length) setApiError(failures[0]);
     setLoading(false);
@@ -114,6 +129,22 @@ function App() {
     if (next === 'technician') go('tasks');
     else if (next === 'tenant') go('occurrences');
     else go('dashboard');
+  };
+  const signInToDemo = (account: DemoAccount) => {
+    setRole(account.role);
+    sessionStorage.setItem('sm-demo-role', account.role);
+    sessionStorage.removeItem('sm-technician-id');
+    setTechnicianId('');
+    if (account.tenantName) {
+      setTenantName(account.tenantName);
+      sessionStorage.setItem('sm-tenant-name', account.tenantName);
+    }
+    if (account.technicianName) sessionStorage.setItem('sm-demo-technician-name', account.technicianName);
+    else sessionStorage.removeItem('sm-demo-technician-name');
+    setSelectedId(null);
+    setPage(account.role === 'technician' ? 'tasks' : account.role === 'tenant' ? 'occurrences' : 'dashboard');
+    sessionStorage.setItem('sm-demo-auth-v2', 'true');
+    setAuthenticated(true);
   };
   const updateTechnician = (id: string) => {
     setTechnicianId(id);
@@ -149,7 +180,7 @@ function App() {
   const userLabel = role === 'tenant' ? tenantName : role === 'technician' ? (currentTechnician?.name || 'Técnico') : role === 'operator' ? 'Equipe operacional' : 'Marina Costa';
 
   if (!authenticated) {
-    return <LoginPage theme={theme} onToggleTheme={() => setTheme(value => value === 'dark' ? 'light' : 'dark')} onContinue={() => { sessionStorage.setItem('sm-demo-auth', 'true'); setAuthenticated(true); }} />;
+    return <LoginPage theme={theme} onToggleTheme={() => setTheme(value => value === 'dark' ? 'light' : 'dark')} onContinue={signInToDemo} />;
   }
 
   return (
@@ -185,7 +216,7 @@ function App() {
           {role === 'technician' && <select className="sidebar-select user-select" aria-label="Selecionar técnico" value={technicianId} onChange={event => updateTechnician(event.target.value)}>{technicians.length ? technicians.map(person => <option key={person.id} value={person.id}>{person.name}</option>) : <option value="">Nenhum técnico cadastrado</option>}</select>}
           <div className="sidebar-user"><div className="avatar">{userLabel.slice(0, 1).toLocaleUpperCase('pt-BR')}</div><div><strong>{userLabel}</strong><span>{roleLabel}</span></div><ChevronDown size={15} /></div>
           <p className="demo-note">Os perfis apenas mudam a navegação. A API ainda não implementa autenticação nem permissões.</p>
-          <button className="demo-logout" onClick={() => { sessionStorage.removeItem('sm-demo-auth'); setAuthenticated(false); }}><LogOut size={14} /> Sair da demonstração</button>
+          <button className="demo-logout" onClick={() => { sessionStorage.removeItem('sm-demo-auth-v2'); setAuthenticated(false); }}><LogOut size={14} /> Sair da demonstração</button>
         </div>
       </aside>
 
@@ -208,7 +239,7 @@ function App() {
   );
 }
 
-function LoginPage({ theme, onToggleTheme, onContinue }: { theme: Theme; onToggleTheme: () => void; onContinue: () => void }) {
+function LoginPage({ theme, onToggleTheme, onContinue }: { theme: Theme; onToggleTheme: () => void; onContinue: (account: DemoAccount) => void }) {
   const [user, setUser] = useState('');
   const [password, setPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -220,8 +251,13 @@ function LoginPage({ theme, onToggleTheme, onContinue }: { theme: Theme; onToggl
       setError('Preencha usuário e senha para continuar.');
       return;
     }
+    const account = DEMO_ACCOUNTS.find(candidate => candidate.username === user.trim().toLocaleLowerCase('pt-BR') && candidate.password === password);
+    if (!account) {
+      setError('Usuário ou senha incorretos. Escolha uma das contas fictícias para teste.');
+      return;
+    }
     setError('');
-    onContinue();
+    onContinue(account);
   };
 
   return (
@@ -232,15 +268,16 @@ function LoginPage({ theme, onToggleTheme, onContinue }: { theme: Theme; onToggl
         <p className="login-eyebrow">GESTÃO DE OPERAÇÕES</p>
         <h1 id="login-title">Acesse sua conta</h1>
         <p className="login-subtitle">Entre para acompanhar as operações do shopping.</p>
-        <div className="login-demo-notice"><ShieldCheck size={16} /><span>Ambiente de demonstração</span></div>
+        <div className="login-demo-notice"><ShieldCheck size={16} /><span>Ambiente de demonstração. O perfil define a tela inicial.</span></div>
         <form className="login-form" onSubmit={submit}>
-          <label className="login-field"><span>Usuário ou CPF fictício</span><input value={user} onChange={event => { setUser(event.target.value); setError(''); }} autoComplete="username" placeholder="Digite um usuário de demonstração" /></label>
+          <label className="login-field"><span>Usuário fictício</span><input value={user} onChange={event => { setUser(event.target.value); setError(''); }} autoComplete="username" placeholder="Digite o usuário de teste" /></label>
           <label className="login-field"><span>Senha fictícia</span><span className="login-password-wrap"><input type={passwordVisible ? 'text' : 'password'} value={password} onChange={event => { setPassword(event.target.value); setError(''); }} autoComplete="current-password" placeholder="Digite uma senha de demonstração" /><button type="button" className="login-password-toggle" onClick={() => setPasswordVisible(value => !value)} aria-label={passwordVisible ? 'Ocultar senha' : 'Mostrar senha'}>{passwordVisible ? <EyeOff size={17} /> : <Eye size={17} />}</button></span></label>
-          <p className="login-demo-copy">Este protótipo não valida nem envia credenciais. Use informações fictícias; qualquer usuário e senha preenchidos permitem continuar.</p>
+          <p className="login-demo-copy">Somente as contas fictícias abaixo funcionam. Os dados ficam no navegador e não são enviados ao backend.</p>
+          <details className="login-demo-accounts"><summary>Ver contas fictícias para teste</summary><div className="login-account-list">{DEMO_ACCOUNTS.map(account => <button type="button" key={account.username} onClick={() => { setUser(account.username); setPassword(account.password); setError(''); }}><strong>{account.label}</strong><span>Usuário: {account.username} · Senha: {account.password}</span></button>)}</div></details>
           {error && <p className="login-error" role="alert">{error}</p>}
           <button className="login-submit" type="submit">Entrar na demonstração <ArrowRight size={16} /></button>
         </form>
-        <p className="login-footer">A autenticação real será conectada ao backend quando estiver disponível.</p>
+        <p className="login-footer">A autenticação real será conectada ao backend quando estiver disponível. Após entrar, você ainda pode trocar o perfil no canto inferior esquerdo.</p>
       </section>
     </main>
   );

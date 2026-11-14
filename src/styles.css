@@ -278,6 +278,13 @@ h1, h2, p { margin-top: 0; }
 .login-password-wrap input { padding-right: 44px; }
 .login-password-toggle { position: absolute; top: 0; right: 0; width: 44px; height: 46px; display: grid; place-items: center; color: #7b8490; background: transparent; border: 0; }
 .login-demo-copy { margin: -3px 0 0; color: #8a939e; font-size: 9px; line-height: 1.55; }
+.login-demo-accounts { overflow: hidden; border: 1px solid #e7e9ed; border-radius: 9px; background: #fafbfc; }
+.login-demo-accounts summary { padding: 11px 12px; color: #596574; cursor: pointer; font-size: 10px; font-weight: 700; }
+.login-account-list { display: grid; gap: 6px; padding: 0 8px 8px; }
+.login-account-list button { display: grid; gap: 4px; width: 100%; padding: 9px 10px; color: #3d4855; background: #fff; border: 1px solid #e7e9ed; border-radius: 7px; text-align: left; }
+.login-account-list button:hover { border-color: #d28a62; background: #fffaf6; }
+.login-account-list strong { font-size: 9px; }
+.login-account-list span { color: #7c8794; font-size: 8px; }
 .login-error { margin: 0; padding: 10px 12px; color: #a54b44; background: #fff3f1; border: 1px solid #f1d4d0; border-radius: 8px; font-size: 10px; }
 .login-submit { min-height: 47px; display: inline-flex; align-items: center; justify-content: center; gap: 9px; color: #fff; background: #e86b1d; border: 0; border-radius: 9px; box-shadow: 0 7px 16px #e86b1d2b; font-size: 12px; font-weight: 750; transition: background .15s ease, transform .15s ease; }
 .login-submit:hover { background: #ce5911; }
@@ -424,6 +431,11 @@ html[data-theme="dark"] .login-subtitle,
 html[data-theme="dark"] .login-demo-copy,
 html[data-theme="dark"] .login-footer { color: #a1aab7; }
 html[data-theme="dark"] .login-demo-notice { color: #e0ad82; background: #30271f; border-color: #57402e; }
+html[data-theme="dark"] .login-demo-accounts { background: #22262d; border-color: #3b424d; }
+html[data-theme="dark"] .login-demo-accounts summary { color: #d0d6de; }
+html[data-theme="dark"] .login-account-list button { color: #edf0f4; background: #1b1e24; border-color: #3b424d; }
+html[data-theme="dark"] .login-account-list button:hover { background: #30271f; border-color: #8e5735; }
+html[data-theme="dark"] .login-account-list span { color: #a1aab7; }
 html[data-theme="dark"] .login-field { color: #c4cbd4; }
 html[data-theme="dark"] .login-field input { color: #edf0f4; background: #22262d; border-color: #3b424d; }
 html[data-theme="dark"] .login-field input::placeholder { color: #7f8997; }

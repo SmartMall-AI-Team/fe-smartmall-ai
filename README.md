@@ -38,7 +38,9 @@ npm run preview
 
 ## Limites da demonstração
 
-O acesso e o seletor de perfil são apenas demonstrativos. O formulário não valida, envia nem armazena as credenciais digitadas; qualquer usuário e senha preenchidos permitem entrar no protótipo. A API documentada ainda não implementa autenticação nem controle de permissões; portanto, isso não é uma barreira de segurança.
+O acesso é demonstrativo: escolha uma conta fictícia na tela de login. Cada conta abre a área correspondente ao perfil. A troca de perfil no canto inferior esquerdo continua disponível depois da entrada. As credenciais são verificadas apenas no frontend, não são enviadas ao backend e não protegem dados. A API documentada ainda não implementa autenticação nem controle de permissões.
+
+Contas de teste: `marina` / `marina123` (administração), `operacao` / `operacao123` (operação), `joao` / `joao123` (técnico), `ana` / `ana123` (Loja Zara) e `carlos` / `carlos123` (Livraria). Use somente esses dados fictícios.
 
 A tela de rádio não captura áudio nem transcreve automaticamente. Ela simula a anotação manual e guarda o texto localmente neste navegador; apenas a mudança de status da tarefa é enviada à API. A API também não oferece um campo de prazo na ocorrência; prazos são definidos nas tarefas.
 
