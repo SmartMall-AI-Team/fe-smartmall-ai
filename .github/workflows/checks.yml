@@ -43,7 +43,7 @@ jobs:
           path: frontend
       - uses: actions/checkout@v7
         with:
-          repository: SmartMall-AI/be-smartmall-ai
+          repository: SmartMall-AI-Team/be-smartmall-ai
           ref: 5503157644ceac1c99922902cda45ead27e8b8fd
           path: backend
       - uses: actions/setup-node@v6

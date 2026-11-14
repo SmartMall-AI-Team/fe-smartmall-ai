@@ -13,6 +13,6 @@ Inclua links de testes, commits, capturas ou vídeo. Use dados fictícios.
 - [ ] A documentação acompanha o comportamento entregue.
 - [ ] Atualizei o contrato compartilhado se a comunicação entre frontend e backend mudou.
 - [ ] Conferi que não há credenciais, arquivos .env ou dados reais no commit.
-- [ ] O PR está pronto para revisão de @geraldojoao.
+- [ ] O PR está pronto para revisão de @Setezin7.
 
 A aprovação e a integração à main são coordenadas pela liderança. Consulte o guia de contribuição.

@@ -1,5 +1,7 @@
 # SmartMall AI Frontend
 
+> **Cópia independente — SmartMall-AI-Team.** Administração: [@Setezin7](https://github.com/Setezin7). Código e histórico preservados da organização anterior. Links de PRs, execuções antigas e serviços publicados registram evidências da origem; esses recursos não foram migrados nem recriados por esta cópia. Consulte o [registro da cópia](https://github.com/SmartMall-AI-Team/docs-smartmall-ai/blob/main/copia-team.md).
+
 Protótipo de interface para acompanhar ocorrências, revisar sugestões de IA, distribuir tarefas e consultar equipamentos do shopping.
 
 [Abrir demonstração online](https://smartmall-ai-demo.vercel.app). O ambiente exige código privado fornecido pela organização e usa somente dados fictícios com IA simulada. Os 12 cenários de navegador também passaram contra os serviços publicados na Vercel, Render e Supabase. O projeto Vercel está conectado à main deste repositório para os próximos deploys.
@@ -64,7 +66,7 @@ No deploy protegido, `VITE_DEMO_ACCESS_REQUIRED=true` acrescenta o campo **Códi
 
 ## Vercel
 
-`vercel.json` fixa o preset Vite, instalação `npm ci`, build `npm run build` e saída `dist`. Configure Node.js 24 e as variáveis públicas `VITE_API_BASE_URL=https://<api>/api/v1` e `VITE_DEMO_ACCESS_REQUIRED=true`. O backend precisa permitir a origem HTTPS desse frontend em `CORS_ORIGINS`. Conecte o repositório do frontend, com a raiz do próprio repositório; HACKRUN não é um monorepo publicado. Acompanhe o estado real da publicação no [guia de deploy](https://github.com/SmartMall-AI/docs-smartmall-ai/blob/main/deploy.md).
+`vercel.json` fixa o preset Vite, instalação `npm ci`, build `npm run build` e saída `dist`. Configure Node.js 24 e as variáveis públicas `VITE_API_BASE_URL=https://<api>/api/v1` e `VITE_DEMO_ACCESS_REQUIRED=true`. O backend precisa permitir a origem HTTPS desse frontend em `CORS_ORIGINS`. Conecte o repositório do frontend, com a raiz do próprio repositório; HACKRUN não é um monorepo publicado. Acompanhe o estado real da publicação no [guia de deploy](https://github.com/SmartMall-AI-Team/docs-smartmall-ai/blob/main/deploy.md).
 
 Contas de teste: `marina` / `marina123` (administração), `operacao` / `operacao123` (operação), `joao` / `joao123` (técnico), `ana` / `ana123` (Loja Zara) e `carlos` / `carlos123` (Livraria). Use somente esses dados fictícios.
 
@@ -74,8 +76,8 @@ Os dados operacionais vêm da API e não são substituídos por exemplos locais 
 
 ## API e documentação
 
-- [Contrato da API](https://github.com/SmartMall-AI/docs-smartmall-ai/blob/main/contrato-api.md)
-- [Backend](https://github.com/SmartMall-AI/be-smartmall-ai)
+- [Contrato da API](https://github.com/SmartMall-AI-Team/docs-smartmall-ai/blob/main/contrato-api.md)
+- [Backend](https://github.com/SmartMall-AI-Team/be-smartmall-ai)
 - [Contribuição e revisão](CONTRIBUTING.md)
 
 Não coloque chaves do provedor de IA no frontend ou em variáveis `VITE_`: esses valores ficam visíveis no navegador.
