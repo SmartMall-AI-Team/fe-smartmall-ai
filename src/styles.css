@@ -262,6 +262,8 @@ h1, h2, p { margin-top: 0; }
 .login-screen { min-height: 100dvh; display: grid; place-items: center; padding: 24px; background: radial-gradient(ellipse at 50% 0%, #f8e9df 0, transparent 47%), #f5f6f8; }
 .login-card { width: min(100%, 440px); padding: 38px; background: #fff; border: 1px solid #e7e9ed; border-radius: 18px; box-shadow: 0 24px 70px rgba(34, 43, 56, .1); }
 .login-brand { display: flex; align-items: center; gap: 10px; color: #202632; font-size: 15px; font-weight: 800; letter-spacing: .08em; margin-bottom: 34px; }
+.login-brand { justify-content: center; margin-bottom: 24px; }
+.login-logo { display: block; width: min(100%, 230px); height: auto; border-radius: 4px; }
 .login-brand-mark { display: grid; place-items: center; width: 38px; height: 38px; color: white; background: #e86b1d; border-radius: 11px; font-size: 20px; font-weight: 850; }
 .login-eyebrow { margin: 0 0 9px; color: #c16a3d; font-size: 9px; font-weight: 800; letter-spacing: .16em; }
 .login-card h1 { margin: 0; color: #202632; font-size: 27px; line-height: 1.2; letter-spacing: -.04em; }

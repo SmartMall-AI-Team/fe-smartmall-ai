@@ -217,7 +217,7 @@ function LoginPage({ onContinue }: { onContinue: () => void }) {
   return (
     <main className="login-screen">
       <section className="login-card" aria-labelledby="login-title">
-        <div className="login-brand"><span className="login-brand-mark">S</span><span>SMART MALL</span></div>
+        <div className="login-brand"><img className="login-logo" src="/images/smartmall-logo-light.jpeg" alt="Smart Mall" /></div>
         <p className="login-eyebrow">GESTÃO DE OPERAÇÕES</p>
         <h1 id="login-title">Acesse sua conta</h1>
         <p className="login-subtitle">Entre para acompanhar as operações do shopping.</p>
